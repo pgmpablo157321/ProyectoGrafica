@@ -9,6 +9,8 @@ camera.lookAt(0, 0, 0);//At
 renderer.setSize(900, 900);
 document.body.appendChild(renderer.domElement);
 
+var seleccionado=false;
+
 material2 = new THREE.MeshBasicMaterial({color: 0xff0000});
 var FizzyText = function () {
     this.Punto = 1;
@@ -300,7 +302,14 @@ puntos();
 
 var drag = new THREE.DragControls(objetos, camera, renderer.domElement);
 
-
+drag.addEventListener( 'dragstart', dragStartCallback );
+drag.addEventListener( 'dragend', dragendCallback );
+function dragStartCallback(event) {
+    controls.enabled=false;
+}
+function dragendCallback(event) {
+    controls.enabled=true;
+}
 
 //se obtienen las lineas de la caja en la que se va a encerrar
 var geomLines = [];
@@ -458,7 +467,7 @@ figure.material.vertexColors = THREE.FaceColors
 
 var vector = new THREE.Vector3(0, 1, 0)
 
-var seleccionado=false;
+
 var animate = function () {
     for (let i = 0; i < Ux.length; i++) {
         for (let j = 0; j < Ux[0].length; j++) {
@@ -487,10 +496,7 @@ var animate = function () {
     }
     modifyLines(v);
     renderer.render(scene, camera);
-    if(!seleccionado){
-        controls.update();
-    }
-    
+    controls.update();
     requestAnimationFrame(animate);
     
     
