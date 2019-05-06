@@ -1,11 +1,11 @@
 var scene = new THREE.Scene();
 var dh = document.getElementById("DrawHere");
 var renderer = new THREE.WebGLRenderer({ canvas: dh });
-var camera = new THREE.PerspectiveCamera(60, 900 / 900, .1, 1000);
+var camera = new THREE.PerspectiveCamera(60, 1820 / 900, .1, 1000);
 var controls = new THREE.OrbitControls(camera, dh);
 camera.position.set(0, 0, 5);//Eye
 camera.lookAt(0, 0, 0);//At
-renderer.setSize(900, 900);
+renderer.setSize(1820, 900);
 document.body.appendChild(renderer.domElement);
 
 var seleccionado = false;
@@ -75,7 +75,7 @@ var d=2;
 var original;
 var loader = new THREE.OBJLoader();
 
-loader.load('Deer.obj', function (object) { 
+loader.load('Chair.obj', function (object) { 
     geom = new THREE.Geometry().fromBufferGeometry(object.children[0].geometry);
     materialN = new THREE.MeshBasicMaterial();
     figure = new THREE.Mesh(geom, materialN);
@@ -132,7 +132,7 @@ var getBoundingBox = function (geom) {
 
 //calculando la caja donde se va a meter
 var getTargetBoxDimentions = function (boundingBox) {
-    var factor = 0.4;
+    var factor = 0.8;
     var dim = [];
     dim.push(factor, factor * (boundingBox[3] - boundingBox[2]) / (boundingBox[1] - boundingBox[0]), factor * (boundingBox[5] - boundingBox[4]) / (boundingBox[1] - boundingBox[0]));
     return dim;
