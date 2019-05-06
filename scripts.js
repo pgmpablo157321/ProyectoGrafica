@@ -1,4 +1,3 @@
-
 var scene = new THREE.Scene();
 var dh = document.getElementById("DrawHere");
 var renderer = new THREE.WebGLRenderer({ canvas: dh });
@@ -9,53 +8,55 @@ camera.lookAt(0, 0, 0);//At
 renderer.setSize(900, 900);
 document.body.appendChild(renderer.domElement);
 
-var seleccionado=false;
+var seleccionado = false;
 
-material2 = new THREE.MeshBasicMaterial({color: 0xff0000});
+material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 var FizzyText = function () {
     this.Punto = 1;
-    this.X = objetos[this.Punto-1].position.x;
-    this.Y = objetos[this.Punto-1].position.y;
-    this.Z = objetos[this.Punto-1].position.z;
-    this.Colores =true;
+    this.X = objetos[this.Punto - 1].position.x;
+    this.Y = objetos[this.Punto - 1].position.y;
+    this.Z = objetos[this.Punto - 1].position.z;
+    this.Colores = true;
     // Define render logic ...
 };
 
 window.onload = function () {
     var text = new FizzyText();
     var gui = new dat.GUI();
-    var c1=gui.add(text, 'Punto', [1, '1', 2, '2', 3, '3', 4, '4', 5, '5', 6, '6', 7, '7', 8, '8', 9, '9', 10, '10', 11, '11',
-        12, '12', 13, '13', 14, '14', 15, '15',16, '16', 17, '17', 18, '18', 19, '19', 20, '20', 21, '21', 22, '22', 23, '23', 24,
-        '24', 25, '25', 26, '26']);
-    var c2=gui.add(text, 'X');
-    var c3=gui.add(text, 'Y');
-    var c4=gui.add(text, 'Z');
-    var c5=gui.add(text,'Colores');
+    var c1 = gui.add(text, 'Punto', [1, '1', 2, '2', 3, '3', 4, '4', 5, '5', 6, '6', 7, '7', 8, '8', 9, '9', 10, '10', 11, '11',
+        12, '12', 13, '13', 14, '14', 15, '15', 16, '16', 17, '17', 18, '18', 19, '19', 20, '20', 21, '21', 22, '22', 23, '23', 24,
+        '24', 25, '25', 26, '26', 27, '27']);
+    var c2 = gui.add(text, 'X');
+    var c3 = gui.add(text, 'Y');
+    var c4 = gui.add(text, 'Z');
+    var c5 = gui.add(text, 'Colores');
 
+    var obj = { add: function () { updateColors() } };
 
-    c1.onChange(function(value) {
+    gui.add(obj, 'add').name('Actualizar Colores');
+    c1.onChange(function (value) {
         for (let index = 0; index < objetos.length; index++) {
-            objetos[index].material=material;
+            objetos[index].material = material;
         }
-        objetos[value-1].material=material2;
+        objetos[value - 1].material = material2;
 
-        text.X=objetos[value-1].position.x;
+        text.X = objetos[value - 1].position.x;
         c2.updateDisplay();
-        text.Y=objetos[value-1].position.y;
+        text.Y = objetos[value - 1].position.y;
         c3.updateDisplay();
-        text.Z=objetos[value-1].position.z;
+        text.Z = objetos[value - 1].position.z;
         c4.updateDisplay();
     });
-    c2.onChange(function(value) {
-        mover(text.Punto-1,value,text.Y,text.Z);
+    c2.onChange(function (value) {
+        mover(text.Punto - 1, value, text.Y, text.Z);
     });
-    c3.onChange(function(value) {
-        mover(text.Punto-1,text.X,value,text.Z);
+    c3.onChange(function (value) {
+        mover(text.Punto - 1, text.X, value, text.Z);
     });
-    c4.onChange(function(value) {
-        mover(text.Punto-1,text.X,text.Y,value);
+    c4.onChange(function (value) {
+        mover(text.Punto - 1, text.X, text.Y, value);
     });
-    c5.onChange(function(value) {
+    c5.onChange(function (value) {
         console.log(value);
     });
 };
@@ -63,12 +64,19 @@ window.onload = function () {
 
 //aqui va la geometria del objeto a deformar
 
-var geom = new THREE.SphereGeometry(5, 100, 100);
-var materialN = new THREE.MeshBasicMaterial();
-var figure = new THREE.Mesh(geom, materialN);
+var geom;
+var materialN;
+var figure;
 
-scene.add(figure);
+var loader = new THREE.OBJLoader();
 
+
+loader.load('cat.obj', function (object) { 
+    geom = new THREE.Geometry().fromBufferGeometry(object.children[0].geometry);
+    materialN = new THREE.MeshBasicMaterial();
+    figure = new THREE.Mesh(geom, materialN);
+    scene.add(figure); 
+})
 
 
 //obteniendo la caja actual donde se encierra
@@ -302,20 +310,20 @@ puntos();
 
 var drag = new THREE.DragControls(objetos, camera, renderer.domElement);
 
-drag.addEventListener( 'dragstart', dragStartCallback );
-drag.addEventListener( 'dragend', dragendCallback );
+drag.addEventListener('dragstart', dragStartCallback);
+drag.addEventListener('dragend', dragendCallback);
 function dragStartCallback(event) {
-    controls.enabled=false;
+    controls.enabled = false;
 }
 function dragendCallback(event) {
-    controls.enabled=true;
+    controls.enabled = true;
 }
 
 //se obtienen las lineas de la caja en la que se va a encerrar
 var geomLines = [];
 var line = [];
 var getLines = function (v) {
-    
+
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 3; j++) {
             geomLines.push(new THREE.Geometry())
@@ -353,45 +361,45 @@ var getLines = function (v) {
 var modifyLines = function (v) {
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 3; j++) {
-            geomLines[3 * i + j].vertices[0].x=v[i][j][0].position.x;
-            geomLines[3 * i + j].vertices[0].y=v[i][j][0].position.y;
-            geomLines[3 * i + j].vertices[0].z=v[i][j][0].position.z;
-            geomLines[3 * i + j].vertices[1].x=v[i][j][1].position.x;
-            geomLines[3 * i + j].vertices[1].y=v[i][j][1].position.y;
-            geomLines[3 * i + j].vertices[1].z=v[i][j][1].position.z;
-            geomLines[3 * i + j].vertices[2].x=v[i][j][2].position.x;
-            geomLines[3 * i + j].vertices[2].y=v[i][j][2].position.y;
-            geomLines[3 * i + j].vertices[2].z=v[i][j][2].position.z;           
+            geomLines[3 * i + j].vertices[0].x = v[i][j][0].position.x;
+            geomLines[3 * i + j].vertices[0].y = v[i][j][0].position.y;
+            geomLines[3 * i + j].vertices[0].z = v[i][j][0].position.z;
+            geomLines[3 * i + j].vertices[1].x = v[i][j][1].position.x;
+            geomLines[3 * i + j].vertices[1].y = v[i][j][1].position.y;
+            geomLines[3 * i + j].vertices[1].z = v[i][j][1].position.z;
+            geomLines[3 * i + j].vertices[2].x = v[i][j][2].position.x;
+            geomLines[3 * i + j].vertices[2].y = v[i][j][2].position.y;
+            geomLines[3 * i + j].vertices[2].z = v[i][j][2].position.z;
         }
     }
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 3; j++) {
-            geomLines[3 * i + j+9].vertices[0].x=v[i][0][j].position.x;
-            geomLines[3 * i + j+9].vertices[0].y=v[i][0][j].position.y;
-            geomLines[3 * i + j+9].vertices[0].z=v[i][0][j].position.z;
-            geomLines[3 * i + j+9].vertices[1].x=v[i][1][j].position.x;
-            geomLines[3 * i + j+9].vertices[1].y=v[i][1][j].position.y;
-            geomLines[3 * i + j+9].vertices[1].z=v[i][1][j].position.z;
-            geomLines[3 * i + j+9].vertices[2].x=v[i][2][j].position.x;
-            geomLines[3 * i + j+9].vertices[2].y=v[i][2][j].position.y;
-            geomLines[3 * i + j+9].vertices[2].z=v[i][2][j].position.z;           
+            geomLines[3 * i + j + 9].vertices[0].x = v[i][0][j].position.x;
+            geomLines[3 * i + j + 9].vertices[0].y = v[i][0][j].position.y;
+            geomLines[3 * i + j + 9].vertices[0].z = v[i][0][j].position.z;
+            geomLines[3 * i + j + 9].vertices[1].x = v[i][1][j].position.x;
+            geomLines[3 * i + j + 9].vertices[1].y = v[i][1][j].position.y;
+            geomLines[3 * i + j + 9].vertices[1].z = v[i][1][j].position.z;
+            geomLines[3 * i + j + 9].vertices[2].x = v[i][2][j].position.x;
+            geomLines[3 * i + j + 9].vertices[2].y = v[i][2][j].position.y;
+            geomLines[3 * i + j + 9].vertices[2].z = v[i][2][j].position.z;
         }
     }
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 3; j++) {
-            geomLines[3 * i + j+18].vertices[0].x=v[0][j][i].position.x;
-            geomLines[3 * i + j+18].vertices[0].y=v[0][j][i].position.y;
-            geomLines[3 * i + j+18].vertices[0].z=v[0][j][i].position.z;
-            geomLines[3 * i + j+18].vertices[1].x=v[1][j][i].position.x;
-            geomLines[3 * i + j+18].vertices[1].y=v[1][j][i].position.y;
-            geomLines[3 * i + j+18].vertices[1].z=v[1][j][i].position.z;
-            geomLines[3 * i + j+18].vertices[2].x=v[2][j][i].position.x;
-            geomLines[3 * i + j+18].vertices[2].y=v[2][j][i].position.y;
-            geomLines[3 * i + j+18].vertices[2].z=v[2][j][i].position.z;
+            geomLines[3 * i + j + 18].vertices[0].x = v[0][j][i].position.x;
+            geomLines[3 * i + j + 18].vertices[0].y = v[0][j][i].position.y;
+            geomLines[3 * i + j + 18].vertices[0].z = v[0][j][i].position.z;
+            geomLines[3 * i + j + 18].vertices[1].x = v[1][j][i].position.x;
+            geomLines[3 * i + j + 18].vertices[1].y = v[1][j][i].position.y;
+            geomLines[3 * i + j + 18].vertices[1].z = v[1][j][i].position.z;
+            geomLines[3 * i + j + 18].vertices[2].x = v[2][j][i].position.x;
+            geomLines[3 * i + j + 18].vertices[2].y = v[2][j][i].position.y;
+            geomLines[3 * i + j + 18].vertices[2].z = v[2][j][i].position.z;
         }
     }
 
-    
+
 }
 
 
@@ -407,10 +415,10 @@ llenarArray(Ux);
 llenarArray(Uy);
 llenarArray(Uz);
 
-var mover =function(indice, dx, dy, dz){
-    objetos[indice].position.x=dx;
-    objetos[indice].position.y=dy;
-    objetos[indice].position.z=dz;
+var mover = function (indice, dx, dy, dz) {
+    objetos[indice].position.x = dx;
+    objetos[indice].position.y = dy;
+    objetos[indice].position.z = dz;
 }
 
 for (var i = 0; i < Ux.length; i++) {
@@ -472,34 +480,34 @@ var animate = function () {
     for (let i = 0; i < Ux.length; i++) {
         for (let j = 0; j < Ux[0].length; j++) {
             for (let k = 0; k < Ux[0][0].length; k++) {
-                Ux[i][j][k]=v[i][j][k].position.x-(((i % 3) - 1) * w / 2);
-                Uy[i][j][k]=v[i][j][k].position.y-(((j % 3) - 1) * h / 2);
-                Uz[i][j][k]=v[i][j][k].position.z-(((k % 3) - 1) * d / 2);
-                
+                Ux[i][j][k] = v[i][j][k].position.x - (((i % 3) - 1) * w / 2);
+                Uy[i][j][k] = v[i][j][k].position.y - (((j % 3) - 1) * h / 2);
+                Uz[i][j][k] = v[i][j][k].position.z - (((k % 3) - 1) * d / 2);
+
             }
-            
+
         }
-        
+
     }
-    for(var i=0; i<figure.geometry.vertices.length; i++){
-        figure.geometry.vertices[i].x=original.vertices[i].x+interpolacion(X,Y,Z,Ux,original.vertices[i].x,original.vertices[i].y,original.vertices[i].z);
-        figure.geometry.vertices[i].y=original.vertices[i].y+interpolacion(X,Y,Z,Uy,original.vertices[i].x,original.vertices[i].y,original.vertices[i].z);
-        figure.geometry.vertices[i].z=original.vertices[i].z+interpolacion(X,Y,Z,Uz,original.vertices[i].x,original.vertices[i].y,original.vertices[i].z);
+    for (var i = 0; i < figure.geometry.vertices.length; i++) {
+        figure.geometry.vertices[i].x = original.vertices[i].x + interpolacion(X, Y, Z, Ux, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z);
+        figure.geometry.vertices[i].y = original.vertices[i].y + interpolacion(X, Y, Z, Uy, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z);
+        figure.geometry.vertices[i].z = original.vertices[i].z + interpolacion(X, Y, Z, Uz, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z);
 
     }
     figure.geometry.verticesNeedUpdate = true;
     figure.geometry.dynamic = true;
-    
+
     for (let index = 0; index < line.length; index++) {
-        line[index].geometry.verticesNeedUpdate=true;
-        
+        line[index].geometry.verticesNeedUpdate = true;
+
     }
     modifyLines(v);
     renderer.render(scene, camera);
     controls.update();
     requestAnimationFrame(animate);
-    
-    
+
+
 }
 animate();
 
