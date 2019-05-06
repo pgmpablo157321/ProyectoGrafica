@@ -67,15 +67,35 @@ window.onload = function () {
 var geom;
 var materialN;
 var figure;
-
+var bBox;
+var tBoxDimentions
+var h=2;
+var w=2;
+var d=2;
+var original;
 var loader = new THREE.OBJLoader();
 
-
-loader.load('cat.obj', function (object) { 
+loader.load('Deer.obj', function (object) { 
     geom = new THREE.Geometry().fromBufferGeometry(object.children[0].geometry);
     materialN = new THREE.MeshBasicMaterial();
     figure = new THREE.Mesh(geom, materialN);
-    scene.add(figure); 
+    scene.add(figure);
+    bBox=getBoundingBox(geom)
+    tBoxDimentions=getTargetBoxDimentions(bBox)
+    h = tBoxDimentions[0] + 0.5;
+    w = tBoxDimentions[1] + 0.5;
+    d = tBoxDimentions[2] + 0.5;
+    contain(bBox, tBoxDimentions);
+    setTimeout(function(){
+        original = figure.geometry.clone();
+        animate();
+    }, 500)
+    figure.geometry.verticesNeedUpdate = true;
+    figure.geometry.dynamic = true;
+    figure.material.vertexColors = THREE.FaceColors
+    
+    
+    
 })
 
 
@@ -108,38 +128,34 @@ var getBoundingBox = function (geom) {
     return [Xmin, Xmax, Ymin, Ymax, Zmin, Zmax];
 }
 
-var bBox = getBoundingBox(geom);
+
 
 //calculando la caja donde se va a meter
 var getTargetBoxDimentions = function (boundingBox) {
-    var factor = 1.5;
+    var factor = 0.4;
     var dim = [];
     dim.push(factor, factor * (boundingBox[3] - boundingBox[2]) / (boundingBox[1] - boundingBox[0]), factor * (boundingBox[5] - boundingBox[4]) / (boundingBox[1] - boundingBox[0]));
     return dim;
 }
 
-var tBoxDimentions = getTargetBoxDimentions(bBox);
 
-var h = tBoxDimentions[0] + 0.5;
-var w = tBoxDimentions[1] + 0.5;
-var d = tBoxDimentions[2] + 0.5;
 
 //moviendo el objeto para contenerlo en la caja deseada el objeto en una caja deseada
 
 var contain = function (boundingBox, tBoxDimentions) {
     var m = new THREE.Matrix4();
-    m.set((tBoxDimentions[0]) / (boundingBox[1] - boundingBox[0]), 0, 0, 0,
-        0, (tBoxDimentions[1]) / (boundingBox[3] - boundingBox[2]), 0, 0,
-        0, 0, (tBoxDimentions[2]) / (boundingBox[5] - boundingBox[4]), 0,
-        -(tBoxDimentions[0] / 2) - (tBoxDimentions[0] * boundingBox[0]) / (boundingBox[1] - boundingBox[0]), -(tBoxDimentions[1] / 2) - (tBoxDimentions[1] * boundingBox[2]) / (boundingBox[3] - boundingBox[2]), -(tBoxDimentions[2] / 2) - (tBoxDimentions[2] * boundingBox[4]) / (boundingBox[5] - boundingBox[4]), 1)
+    m.set((tBoxDimentions[0]) / (boundingBox[1] - boundingBox[0]), 0, 0, -tBoxDimentions[0]/2-(tBoxDimentions[0]*boundingBox[0])/ (boundingBox[1] - boundingBox[0]),
+        0, (tBoxDimentions[1]) / (boundingBox[3] - boundingBox[2]), 0, -tBoxDimentions[1]/2-(tBoxDimentions[1]*boundingBox[2])/ (boundingBox[3] - boundingBox[2]),
+        0, 0, (tBoxDimentions[2]) / (boundingBox[5] - boundingBox[4]), -tBoxDimentions[2]/2-(tBoxDimentions[2]*boundingBox[4])/ (boundingBox[5] - boundingBox[4]),
+        0, 0, 0, 1)
 
     figure.geometry.applyMatrix(m);
     figure.updateMatrix();
+    
     return m;
 }
-contain(bBox, tBoxDimentions);
 
-var original = figure.geometry.clone();
+
 
 //para calcular los polinomios de interpolacion
 var getPoly = function (x, y, z) {
@@ -406,7 +422,7 @@ var modifyLines = function (v) {
 
 //deformando
 var X, Y, Z;
-[X, Y, Z] = getPoly([-w / 2, 0, w / 2], [-h / 2, 0, h / 2], [-d / 2, 0, d / 2]);
+[X, Y, Z] = getPoly([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]);
 var Ux = createArray(3, 3, 3);
 var Uy = createArray(3, 3, 3);
 var Uz = createArray(3, 3, 3);
@@ -424,7 +440,6 @@ var mover = function (indice, dx, dy, dz) {
 for (var i = 0; i < Ux.length; i++) {
     for (var j = 0; j < Ux[0].length; j++) {
         for (var k = 0; k < Ux[0][0].length; k++) {
-            Ux[i][j][k] = (Math.random() - 0.5);
             v[i][j][k].position.x += Ux[i][j][k];
             v[i][j][k].position.y += Uy[i][j][k];
             v[i][j][k].position.z += Uz[i][j][k];
@@ -432,11 +447,7 @@ for (var i = 0; i < Ux.length; i++) {
     }
 }
 getLines(v);
-for (var i = 0; i < figure.geometry.vertices.length; i++) {
-    figure.geometry.vertices[i].x = original.vertices[i].x + interpolacion(X, Y, Z, Ux, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z)
-    figure.geometry.vertices[i].y = original.vertices[i].y + interpolacion(X, Y, Z, Uy, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z)
-    figure.geometry.vertices[i].z = original.vertices[i].z + interpolacion(X, Y, Z, Uz, original.vertices[i].x, original.vertices[i].y, original.vertices[i].z)
-}
+
 
 
 
@@ -467,11 +478,8 @@ var updateColors = function () {
     }
     figure.geometry.colorsNeedUpdate = true;
 }
-updateColors();
 
-figure.geometry.verticesNeedUpdate = true;
-figure.geometry.dynamic = true;
-figure.material.vertexColors = THREE.FaceColors
+
 
 var vector = new THREE.Vector3(0, 1, 0)
 
@@ -480,9 +488,9 @@ var animate = function () {
     for (let i = 0; i < Ux.length; i++) {
         for (let j = 0; j < Ux[0].length; j++) {
             for (let k = 0; k < Ux[0][0].length; k++) {
-                Ux[i][j][k] = v[i][j][k].position.x - (((i % 3) - 1) * w / 2);
-                Uy[i][j][k] = v[i][j][k].position.y - (((j % 3) - 1) * h / 2);
-                Uz[i][j][k] = v[i][j][k].position.z - (((k % 3) - 1) * d / 2);
+                Ux[i][j][k] = v[i][j][k].position.x - (((i % 3) - 1) );
+                Uy[i][j][k] = v[i][j][k].position.y - (((j % 3) - 1) );
+                Uz[i][j][k] = v[i][j][k].position.z - (((k % 3) - 1) );
 
             }
 
@@ -506,8 +514,5 @@ var animate = function () {
     renderer.render(scene, camera);
     controls.update();
     requestAnimationFrame(animate);
-
-
 }
-animate();
 
